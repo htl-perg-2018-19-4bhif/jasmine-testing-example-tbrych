@@ -34,10 +34,14 @@ export class InvoiceCalculatorService {
     let exclVat: InvoiceLineComplete[] = [];
 
     invoiceLines.forEach(line => {
-      let curPriceExclusiveVat: number = this.CalculatePriceExclusiveVat(line.priceInclusiveVat, this.vatCategoriesService.getVat(line.vatCategory));
-      exclVat.push({ product: line.product, vatCategory: line.vatCategory, priceInclusiveVat: line.priceInclusiveVat, priceExclusiveVat: curPriceExclusiveVat });
-      lines.totalPriceExclusiveVat += curPriceExclusiveVat;
-      lines.totalPriceInclusiveVat += line.priceInclusiveVat;
+      if (line.priceInclusiveVat == undefined || line.priceInclusiveVat <= 0) {
+        exclVat.push({ product: line.product, vatCategory: line.vatCategory, priceInclusiveVat: line.priceInclusiveVat, priceExclusiveVat: -1 });
+      } else {
+        let curPriceExclusiveVat: number = this.CalculatePriceExclusiveVat(line.priceInclusiveVat, this.vatCategoriesService.getVat(line.vatCategory));
+        exclVat.push({ product: line.product, vatCategory: line.vatCategory, priceInclusiveVat: line.priceInclusiveVat, priceExclusiveVat: curPriceExclusiveVat });
+        lines.totalPriceExclusiveVat += curPriceExclusiveVat;
+        lines.totalPriceInclusiveVat += line.priceInclusiveVat;
+      }
     });
     lines.totalVat = lines.totalPriceInclusiveVat - lines.totalPriceExclusiveVat;
     lines.invoiceLines = exclVat;
